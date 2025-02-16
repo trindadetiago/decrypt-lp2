@@ -26,7 +26,6 @@ char *encrypt(const char *str)
     for (int i = 0; i < TAMANHO_SENHA; i++)
     {
         char c = str[i];
-
         if (c >= 'A' && c <= 'Z')
         {
             int val = c - ASCII_A;
@@ -45,10 +44,10 @@ char *encrypt(const char *str)
     return str_result;
 }
 
+// Função que tenta descriptografar a senha original via força bruta
 void brute_force(const char *encrypted, char *result)
 {
     char attempt[TAMANHO_SENHA + 1];
-
     for (char a = 'A'; a <= 'Z'; a++)
     {
         for (char b = 'A'; b <= 'Z'; b++)
@@ -77,6 +76,7 @@ void brute_force(const char *encrypted, char *result)
     }
 }
 
+// Função para processar um arquivo de entrada e descriptografar as senhas
 void process_file(const char *filename, const char *output_dir)
 {
     printf("Processo PID %d: Quebrando senhas de %s\n", getpid(), filename);
@@ -89,8 +89,7 @@ void process_file(const char *filename, const char *output_dir)
         exit(EXIT_FAILURE);
     }
 
-    // Criando diretório de saída, se não existir
-    mkdir(output_dir, 0777);
+    mkdir(output_dir, 0777); // Garante que o diretório de saída exista
 
     char output_filename[256];
     snprintf(output_filename, sizeof(output_filename), "%s/dec_%s", output_dir, strrchr(filename, '/') + 1);
@@ -104,12 +103,11 @@ void process_file(const char *filename, const char *output_dir)
     }
 
     char encrypted[TAMANHO_SENHA + 1];
-    while (fscanf(file, "%4s", encrypted) == 1) // Lendo todas as senhas do arquivo
+    while (fscanf(file, "%4s", encrypted) == 1)
     {
         char result[TAMANHO_SENHA + 1] = {0};
         brute_force(encrypted, result);
-
-        fprintf(output, "%s\n", result); // Escrevendo cada senha quebrada no arquivo de saída
+        fprintf(output, "%s\n", result);
     }
 
     fclose(file);
@@ -140,10 +138,10 @@ int main(int argc, char *argv[])
     printf("Gerando %d processos para processar arquivos...\n", num_files);
     fflush(stdout);
 
+    // Criando um processo separado para cada arquivo
     for (int i = 0; i < num_files; i++)
     {
         pid_t pid = fork();
-
         if (pid == 0) // Processo filho
         {
             process_file(filenames[i], argv[2]);
@@ -159,6 +157,7 @@ int main(int argc, char *argv[])
     printf("[Aguardando término da força bruta]\n");
     fflush(stdout);
 
+    // O processo pai aguarda todos os filhos terminarem
     while (wait(NULL) > 0)
         ;
 
